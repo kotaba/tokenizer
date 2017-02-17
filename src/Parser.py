@@ -42,7 +42,11 @@ class Parse:
 			for item in data:
 				collection = self.db.src_data
 				if not collection.find_one({"event_id": item['id']}):
-					item = {'event_id': item['id'], 'description': item['description']}
+					item = {'event_id': item['id'], 
+							'created_at': datetime.datetime.today(), 
+							'title': item['name'], 
+							'description': item['description']
+							}
 					collection.insert_one(item)
 					counter = counter + 1
 					total = total + 1;
