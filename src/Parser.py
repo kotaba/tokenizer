@@ -33,6 +33,12 @@ class Parse:
 	def proccess_urls(self):
 		total = 0;
 		urls = self.get_parse_urls()
+		collection_src = self.db.src_data
+		collection_log = self.db.log_data
+		log_item = {
+				'run_at': datetime.datetime.today(),
+				'urls': urls
+			}
 		for url in urls:
 			print 'Parse start [' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + ']'
 			print 'Url: ' + url
@@ -40,20 +46,23 @@ class Parse:
 			counter = 0
 			one_total = len(data)
 			for item in data:
-				collection = self.db.src_data
-				if not collection.find_one({"event_id": item['id']}):
+				if not collection_src.find_one({"event_id": item['id']}):
 					item = {'event_id': item['id'], 
 							'created_at': datetime.datetime.today(), 
 							'title': item['name'], 
 							'description': item['description']
 							}
-					collection.insert_one(item)
+					collection_src.insert_one(item)
 					counter = counter + 1
 					total = total + 1;
 				else:
 					one_total = one_total - 1
 				print 'Items ' + str(counter) + '/' + str(one_total)		
-		print 'Finished. Total items write: ' + str(total)		
+		print 'Finished. Total items write: ' + str(total)
+		log_item['end_at'] = datetime.datetime.today()
+		log_item['write_items'] = total
+		log_item['run_time'] = str(log_item['end_at'] - log_item['run_at'])
+		collection_log.insert_one(log_item)		
 
 			
 
