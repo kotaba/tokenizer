@@ -3,6 +3,7 @@
 ## Requires
 ##### Python 2.7
 ##### MongoDB
+##### Linux
 
 ## Install
 ##### git clone https://github.com/kotaba/tokenizer.git
@@ -24,6 +25,12 @@
 ###### mongodb_password - password of user in mongodb, must be string *required
 ###### mongodb_port - port for connect to mongo server, must me integer
 ###### mongodb_database - specify database of mongodb *required
+
+## Run
+### For start parsing execute
+###### python run.py parse
+
+
 
 
 
