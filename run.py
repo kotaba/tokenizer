@@ -1,4 +1,13 @@
 from src.Parser import Parse
+import sys
 
-instance = Parse()
-instance.proccess_urls()
+args = sys.argv
+try:
+	command = args[1]
+	if(command == 'parse'):
+		instance = Parse()
+		instance.proccess_urls()
+
+except IndexError:
+	print 'Command must be set'
+	print 'Available commands: parse'
