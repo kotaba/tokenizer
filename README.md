@@ -10,6 +10,9 @@
 ##### cd tokenizer
 ##### pip install -r pip.list
 
+#### Install Tensorflow library
+##### https://www.tensorflow.org/versions/r0.10/get_started/os_setup
+
 ## Config
 ### Edit .py files in tokenizer/src/config
 
