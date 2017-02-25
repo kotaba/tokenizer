@@ -17,26 +17,26 @@ class Proccessor:
 		data = []
 		collection_data = self.collection_src.find()
 		for item in collection_data:
-			data.append(item['description'])
+			data.append({'description': item['description'], 'event_id': item['event_id']})
 		return data
 			
 	def structurize_data(self):
 		data = self.find_data()
 		indexes = []
 		i = 0
-		for description in data:
-			classificator = Classifier(description)
+		for item in data:
+			classificator = Classifier(item['description'])
 			classificator.make_structure()
-			indexes.append(classificator.structure)
+			indexes.append({'structure': classificator.structure, 'event_id': item['event_id']})
 		classificator.make_words(indexes)
 		self.collection_indexes_tmp.delete_many({})
 		self.collection_indexes_tmp.insert_many(classificator.indexes)
 		map = Code("function () {"
-            			"  this.word.forEach(function(z) {"
-            			"    emit(z, 1);"
+            			"  this.word.forEach(function(word) {"
+            			"    emit(this.event_id, word);"
             			"  });"
             			"}")
-		reduce = Code("function (key, values) {"
+		reduce = Code("function (event_id, values) {"
 	               		"  var total = 0;"
                			"  for (var i = 0; i < values.length; i++) {"
                			"    total += values[i];"
@@ -44,8 +44,9 @@ class Proccessor:
               			"  return total;"
                			"}")
 		result = self.collection_indexes_tmp.map_reduce(map, reduce, {'inline' : 1})
-		self.collection_words_count.delete_many({})
-		self.collection_words_count.insert_many(result['results'])
+		print result
+		#self.collection_words_count.delete_many({})
+		#self.collection_words_count.insert_many(result['results'])
 
 
 

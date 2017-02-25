@@ -35,9 +35,9 @@ class Classifier:
 		i = 0
 		result = []
 		already_indexed = []
-		for description in data:
-			for word in description:
-				result.append({'word': [word]})
+		for item in data:
+			for word in item['structure']:
+				result.append({'word': [word], 'event_id': item['event_id']})
 				i = i+1
 		self.indexes = result
 

@@ -3,6 +3,7 @@ from config.api import ApiConfig
 from MongoDB import Database
 import datetime
 import sys
+from threading import Thread
 '''
 Component for parse meetmix api and get events data
 '''
@@ -13,6 +14,7 @@ class Parse:
 		self.api_config = ApiConfig()
 		mongodb = Database()
 		self.db = mongodb.get_connection()
+		self.total_items = 0
 
 	# make json request to specific url
 	def json_request(self, url):
@@ -31,7 +33,6 @@ class Parse:
 		return urls
 
 	def proccess_urls(self):
-		total = 0;
 		urls = self.get_parse_urls()
 		collection_src = self.db.src_data
 		collection_log = self.db.log_data
@@ -40,29 +41,33 @@ class Parse:
 				'urls': urls
 			}
 		for url in urls:
-			print 'Parse start [' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + ']'
-			print 'Url: ' + url
-			data = self.json_request(url)
-			counter = 0
-			one_total = len(data)
-			for item in data:
-				if not collection_src.find_one({"event_id": item['id']}):
-					item = {'event_id': item['id'], 
+			# make thread for each url
+			tr = Thread(target=self.proccess_single_url, args=(url, collection_src))
+			tr.start()
+		print 'Finished. Total items write: ' + str(self.total_items)
+		log_item['end_at'] = datetime.datetime.today()
+		log_item['write_items'] = self.total_items
+		log_item['run_time'] = str(log_item['end_at'] - log_item['run_at'])
+		collection_log.insert_one(log_item)
+
+	def proccess_single_url(self, url, collection):
+		total = 0;
+		print 'Parse start [' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + ']'
+		print 'Url: ' + url
+		data = self.json_request(url)
+		counter = 0
+		one_total = len(data)
+		tr = Thread(target=self.save_parse_data, args=(collection, item))
+		tr.start()
+
+	def save_parse_data(self, collection, item):
+		item = {'event_id': item['id'], 
 							'created_at': datetime.datetime.today(), 
 							'title': item['name'], 
 							'description': item['description']
 							}
-					collection_src.insert_one(item)
-					counter = counter + 1
-					total = total + 1;
-				else:
-					one_total = one_total - 1
-				print 'Items ' + str(counter) + '/' + str(one_total)		
-		print 'Finished. Total items write: ' + str(total)
-		log_item['end_at'] = datetime.datetime.today()
-		log_item['write_items'] = total
-		log_item['run_time'] = str(log_item['end_at'] - log_item['run_at'])
-		collection_log.insert_one(log_item)		
+		collection.insert_one(item)
+
 
 			
 
